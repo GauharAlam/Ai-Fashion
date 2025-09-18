@@ -45,7 +45,7 @@ const AppContent: React.FC = () => {
     return (
         <div className="min-h-screen font-sans bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-200 transition-colors duration-300">
             {!isAuthPage && <Header theme={theme} toggleTheme={toggleTheme} />}
-            <main>
+            <main className="p-4 sm:p-6 md:p-8">
                 <Routes>
                     <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
                     <Route path="/login" element={<LoginPage />} />

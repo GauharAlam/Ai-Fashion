@@ -4,12 +4,10 @@ import { RecommendationDisplay } from '../components/RecommendationDisplay';
 import { Loader } from '../components/Loader';
 import { SparklesIcon } from '../components/icons/SparklesIcon';
 import { analyzeImageForFashion } from '../services/geminiService';
-// FIX: Removed unused 'FashionAdvice' type to resolve type mismatches with geminiService.
 import type { Outfit, UserProfile as UserProfileType } from '../types';
 import { UserProfile } from '../components/UserProfile';
 import { SavedOutfits } from '../components/SavedOutfits';
 
-// FIX: Added missing 'gender' property to satisfy the UserProfileType interface.
 const initialProfile: UserProfileType = {
   gender: '',
   bodyShape: '',
@@ -22,7 +20,6 @@ const initialProfile: UserProfileType = {
 function HomePage() {
   const [imageBase64, setImageBase64] = useState<string | null>(null);
   const [imageMimeType, setImageMimeType] = useState<string>('');
-  // FIX: Changed state type from 'FashionAdvice' to 'Outfit[]' to match the return type of 'analyzeImageForFashion'.
   const [recommendations, setRecommendations] = useState<Outfit[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,11 +48,9 @@ function HomePage() {
 
   const handleToggleSaveOutfit = (outfitToToggle: Outfit) => {
     setSavedOutfits(prevSaved => {
-      // FIX: Changed property access from '.title' to '.styleTitle' to match the 'Outfit' type.
       const isSaved = prevSaved.some(o => o.styleTitle === outfitToToggle.styleTitle);
       let newSavedOutfits;
       if (isSaved) {
-        // FIX: Changed property access from '.title' to '.styleTitle' to match the 'Outfit' type.
         newSavedOutfits = prevSaved.filter(o => o.styleTitle !== outfitToToggle.styleTitle);
       } else {
         newSavedOutfits = [...prevSaved, outfitToToggle];
@@ -106,46 +101,40 @@ function HomePage() {
   
   return (
     <>
-      <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-start">
-        <div className="flex flex-col items-center gap-4 sticky top-24">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        <div className="lg:col-span-1 lg:sticky top-24 flex flex-col items-center gap-6">
             <ImageUploader onImageUpload={handleImageUpload} currentImage={imageBase64} />
             <UserProfile profile={userProfile} onProfileChange={handleProfileChange} />
             
-            {imageBase64 && !isLoading && !recommendations && (
+            {imageBase64 && (
               <button
                   onClick={handleStartAnalysis}
-                  className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-pink-500 to-violet-500 hover:from-pink-600 hover:to-violet-600 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-pink-300 dark:focus:ring-pink-800"
+                  disabled={isLoading}
+                  className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-pink-500 to-violet-500 hover:from-pink-600 hover:to-violet-600 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-pink-300 dark:focus:ring-pink-800 disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                  <SparklesIcon />
-                  <span>Generate Style Analysis</span>
+                  {isLoading ? (
+                      <>
+                          <Loader />
+                          <span>Analyzing...</span>
+                      </>
+                  ) : (
+                      <>
+                          <SparklesIcon />
+                          <span>{recommendations ? 'Re-generate Style' : 'Generate Style Analysis'}</span>
+                      </>
+                  )}
               </button>
             )}
             
-            {isLoading && (
-                <div className="flex items-center justify-center gap-2 bg-pink-600 text-white font-bold py-2 px-4 rounded-lg w-full">
-                  <Loader />
-                  <span>Analyzing your style...</span>
-                </div>
-            )}
-
             {error && (
               <div className="bg-red-100 border border-red-400 text-red-700 dark:bg-red-900 dark:border-red-700 dark:text-red-200 px-4 py-3 rounded-xl w-full" role="alert">
-                  {error}
-              </div>
-            )}
-
-            {!isLoading && !error && !recommendations && (
-              <div className="text-center text-gray-500 dark:text-gray-400 p-4 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl w-full">
-                {!imageBase64 ? (
-                  <p>Upload a photo to get personalized fashion advice!</p>
-                ) : (
-                  <p>Refine your profile, then click "Generate" to see the magic!</p>
-                )}
+                  <p className="font-bold">Analysis Failed</p>
+                  <p className="text-sm">{error}</p>
               </div>
             )}
         </div>
         
-        <div className="md:col-span-1">
+        <div className="lg:col-span-2">
           {recommendations && imageBase64 ? (
             <RecommendationDisplay 
               recommendations={recommendations} 
@@ -157,11 +146,11 @@ function HomePage() {
             />
           ) : (
             !isLoading && (
-              <div className="h-full flex flex-col items-center justify-center text-center p-8 bg-gray-100 dark:bg-gray-800/50 rounded-2xl shadow-lg">
+              <div className="h-[calc(100vh-10rem)] flex flex-col items-center justify-center text-center p-8 bg-gray-100 dark:bg-gray-800/50 rounded-2xl shadow-lg">
                 <SparklesIcon />
                 <h2 className="text-2xl font-bold mt-4 mb-2 text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-violet-400">Welcome to Your AI Stylist</h2>
                 <p className="text-gray-500 dark:text-gray-400 max-w-sm">
-                  This is your personal dashboard. Upload a photo to begin your style analysis.
+                  Upload a photo of yourself and let our AI provide you with personalized fashion advice.
                 </p>
               </div>
             )

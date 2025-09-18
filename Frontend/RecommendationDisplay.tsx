@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 // FIX: Import UserProfile to use in component props.
-import type { FashionAdvice, Outfit, UserProfile } from './types';
+import type { FashionAdvice, Outfit, UserProfile } from './src/./types';
 import { OutfitCard } from './OutfitCard';
-import { ColorPalette } from './components/ColorPalette';
-import { DosAndDonts } from './components/DosAndDonts';
-import { TagIcon } from './components/icons/TagIcon';
-import { CheckCircleIcon } from './components/icons/CheckCircleIcon';
-import { PlusIcon } from './components/icons/PlusIcon';
-import { ShareIcon } from './components/icons/ShareIcon';
-import { Loader } from './components/Loader';
-import { getMoreOutfits } from './services/geminiService';
+import { ColorPalette } from './src/./components/ColorPalette';
+import { DosAndDonts } from './src/./components/DosAndDonts';
+import { TagIcon } from './src/./components/icons/TagIcon';
+import { CheckCircleIcon } from './src/components/icons/CheckCircleIcon';
+import { PlusIcon } from './src/./components/icons/PlusIcon';
+import { ShareIcon } from './src/./components/icons/ShareIcon';
+import { Loader } from './src/./components/Loader';
+import { getMoreOutfits } from './src/./services/geminiService';
 
 interface RecommendationDisplayProps {
   recommendations: FashionAdvice;
@@ -116,7 +116,7 @@ export const RecommendationDisplay: React.FC<RecommendationDisplayProps> = ({ re
               <span key={index} className="bg-violet-800 text-violet-200 text-sm font-medium px-3 py-1 rounded-full">{item}</span>
             ))}
         </div>
-      </section>
+      </Section>
 
       <DosAndDonts dosAndDonts={recommendations.dosAndDonts} />
     </div>
