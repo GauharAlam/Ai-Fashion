@@ -5,6 +5,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const authRoutes = require('./src/routes/auth');
+const historyRoutes = require('./src/routes/history'); // Add this line
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/history', historyRoutes); // Add this line
 
 // Database Connection
 mongoose.connect(process.env.MONGO_URI, {

@@ -68,8 +68,7 @@ export const RecommendationDisplay: React.FC<RecommendationDisplayProps> = ({ re
     setIsFetchingMore(true);
     setFetchMoreError(null);
     try {
-      const existingTitles = outfits.map(o => o.styleTitle);
-      const newOutfits = await getMoreOutfits(imageBase64, imageMimeType, existingTitles, userProfile, clothingFilters);
+      const newOutfits = await getMoreOutfits(imageBase64, imageMimeType, outfits, userProfile, clothingFilters);
       setOutfits(prev => [...prev, ...newOutfits]);
     } catch (e) {
       const error = e instanceof Error ? e.message : "An unknown error occurred.";

@@ -50,6 +50,7 @@ export interface Outfit {
   occasionFit: string[];
   accessories: string[];
   imagePrompt: string;
+  imageUrl?: string; // Add this line
 }
 
 export interface UserProfile {
@@ -59,4 +60,44 @@ export interface UserProfile {
   stylePreferences: string[];
   preferredColors?: string;
   dislikedColors?: string;
+}
+
+export interface History {
+    _id: string;
+    user: string;
+    outfit: Outfit;
+    createdAt: string;
+}
+
+// ... (existing types)
+
+export interface Outfit {
+  styleTitle: string;
+  outfitDescription: string;
+  colorPalette: ColorInfo[];
+  occasionFit: string[];
+  accessories: string[];
+  imagePrompt: string;
+  styleMatch?: number; // Added for the style match percentage
+}
+
+export interface UserProfile {
+  gender: 'Male' | 'Female' | '';
+  bodyShape: string;
+  skinTone: string;
+  stylePreferences: string[];
+  preferredColors?: string;
+  dislikedColors?: string;
+  budget?: number; // Added for the budget slider
+}
+
+export interface Outfit {
+  styleTitle: string;
+  outfitDescription: string;
+  colorPalette: ColorInfo[];
+  occasionFit: string[];
+  accessories: string[];
+  imagePrompt: string;
+  styleMatch?: number;
+  generatedImages?: string[]; // Added to store the generated images
 }

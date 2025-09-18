@@ -6,7 +6,6 @@ import { DownloadIcon } from './icons/DownloadIcon';
 import { HeartIcon } from './icons/HeartIcon';
 import { ShareIcon } from './icons/ShareIcon';
 import { TagIcon } from './icons/TagIcon';
-import { CheckCircleIcon } from './icons/CheckCircleIcon';
 
 interface OutfitCardProps {
   outfit: Outfit;
@@ -25,15 +24,18 @@ const ColorSwatch: React.FC<{ colorInfo: ColorInfo }> = ({ colorInfo }) => {
 };
 
 export const OutfitCard: React.FC<OutfitCardProps> = ({ outfit, isSaved, onToggleSave, imageBase64, imageMimeType }) => {
-  const [generatedImages, setGeneratedImages] = useState<string[] | null>(null);
+  const [generatedImages, setGeneratedImages] = useState<string[] | null>(outfit.generatedImages || null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!outfit.generatedImages);
   const [error, setError] = useState<string | null>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let isMounted = true;
     const createImage = async () => {
+      // Only generate images if they don't already exist
+      if (outfit.generatedImages) return;
+
       if (!outfit.imagePrompt) {
         setError("No image prompt provided.");
         setIsLoading(false);
@@ -46,6 +48,8 @@ export const OutfitCard: React.FC<OutfitCardProps> = ({ outfit, isSaved, onToggl
         const imageB64Array = await generateOutfitImage(outfit.imagePrompt, imageBase64, imageMimeType);
         if (isMounted) {
           setGeneratedImages(imageB64Array);
+          // Pass the newly generated images to the parent for potential saving
+          outfit.generatedImages = imageB64Array;
         }
       } catch (e) {
         if (isMounted) {
@@ -64,7 +68,7 @@ export const OutfitCard: React.FC<OutfitCardProps> = ({ outfit, isSaved, onToggl
     return () => {
       isMounted = false;
     };
-  }, [outfit.imagePrompt, imageBase64, imageMimeType]);
+  }, [outfit, imageBase64, imageMimeType]);
 
   const goToPrevious = () => {
     if (generatedImages) {
@@ -113,7 +117,9 @@ export const OutfitCard: React.FC<OutfitCardProps> = ({ outfit, isSaved, onToggl
   
   const handleSaveClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    onToggleSave(outfit);
+    // Ensure the outfit object has the generated images before saving
+    const outfitToSave = { ...outfit, generatedImages };
+    onToggleSave(outfitToSave);
   };
 
   const handleShareOutfit = async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -246,7 +252,7 @@ export const OutfitCard: React.FC<OutfitCardProps> = ({ outfit, isSaved, onToggl
   };
   
   return (
-    <div className="bg-gray-100 dark:bg-gray-800/50 rounded-2xl shadow-lg transition-all duration-300 w-80 md:w-96 flex-shrink-0 flex flex-col">
+    <div className="bg-white/30 dark:bg-black/20 backdrop-blur-lg rounded-2xl shadow-lg border border-white/20 transition-all duration-300 w-80 md:w-96 flex-shrink-0 flex flex-col">
       <ImageContainer />
       <div className="p-6 flex flex-col flex-grow gap-4">
         <div>
@@ -256,10 +262,17 @@ export const OutfitCard: React.FC<OutfitCardProps> = ({ outfit, isSaved, onToggl
                     {outfit.colorPalette.map((color, index) => <ColorSwatch key={index} colorInfo={color} />)}
                 </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-                {outfit.occasionFit.map((item, index) => (
-                  <span key={index} className="bg-violet-200 text-violet-800 dark:bg-violet-800 dark:text-violet-200 text-xs font-medium px-2.5 py-0.5 rounded-full">{item}</span>
-                ))}
+            <div className="flex items-center justify-between">
+                <div className="flex flex-wrap gap-2">
+                    {outfit.occasionFit.map((item, index) => (
+                      <span key={index} className="bg-violet-200 text-violet-800 dark:bg-violet-800 dark:text-violet-200 text-xs font-medium px-2.5 py-0.5 rounded-full">{item}</span>
+                    ))}
+                </div>
+                {outfit.styleMatch && (
+                    <div className="text-sm font-bold text-green-600 dark:text-green-400">
+                        {outfit.styleMatch}% Match
+                    </div>
+                )}
             </div>
         </div>
         

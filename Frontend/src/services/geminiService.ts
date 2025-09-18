@@ -1,5 +1,6 @@
 import { GoogleGenAI, Type, Modality } from "@google/genai";
 import type { Outfit, UserProfile } from '../types';
+import { saveOutfitHistory } from './historyService';
 
 // Per instructions, API key is in environment variables.
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
@@ -118,14 +119,19 @@ Provide three diverse outfit recommendations. Return the response as a JSON arra
 
     const jsonText = response.text.trim();
     try {
-        return JSON.parse(jsonText) as Outfit[];
+        const outfits = JSON.parse(jsonText) as Outfit[];
+        // Save each outfit to history
+        for (const outfit of outfits) {
+            await saveOutfitHistory(outfit);
+        }
+        return outfits;
     } catch (e) {
         console.error("Failed to parse JSON response:", jsonText);
         throw new Error("The AI returned an invalid response. Please try again.");
     }
 };
 
-export const getMoreOutfits = async (imageBase64: string, mimeType: string, existingTitles: string[], userProfile: UserProfile, filters: string[] = []): Promise<Outfit[]> => {
+export const getMoreOutfits = async (imageBase64: string, mimeType: string, existingOutfits: Outfit[], userProfile: UserProfile, filters: string[] = []): Promise<Outfit[]> => {
     const imagePart = {
         inlineData: {
             data: imageBase64,
@@ -133,9 +139,16 @@ export const getMoreOutfits = async (imageBase64: string, mimeType: string, exis
         },
     };
 
-    const basePrompt = `Based on the user's photo and gender, generate two more unique outfit recommendations that are fashionable and consider current style trends.
-Avoid suggesting outfits similar to these already provided: ${existingTitles.join(', ')}.
-Provide two new, distinct outfit ideas. Return the response as a JSON array of outfit objects.`;
+    const existingOutfitsSummary = existingOutfits.map(o => 
+        `- Style: "${o.styleTitle}". Description: ${o.outfitDescription}`
+    ).join('\n');
+
+    const basePrompt = `Based on the user's photo and profile, generate two more unique and creative outfit recommendations. These new outfits must be substantially different from the ones already provided.
+
+Here are the outfits already suggested:
+${existingOutfitsSummary}
+
+Please ensure the new recommendations explore different clothing items, styles (e.g., if you provided casual, suggest something more formal or edgy), or color palettes. Be creative and avoid repetition. Return the response as a JSON array of two new, distinct outfit objects.`;
     
     const fullPrompt = buildFashionPrompt(basePrompt, userProfile, filters);
 
@@ -146,7 +159,6 @@ Provide two new, distinct outfit ideas. Return the response as a JSON array of o
         contents: [{ parts: [imagePart, textPart] }],
         config: {
             responseMimeType: 'application/json',
-            // Re-using the same schema, but asking for a different number of items in the prompt.
             responseSchema: fashionAdviceSchema, 
         },
     });
@@ -154,8 +166,11 @@ Provide two new, distinct outfit ideas. Return the response as a JSON array of o
     const jsonText = response.text.trim();
     try {
         const outfits = JSON.parse(jsonText) as Outfit[];
-        // The prompt asks for 2, but the schema is for 3, so let's just take the first 2 if more are returned.
-        return outfits.slice(0, 2);
+        const newOutfits = outfits.slice(0, 2);
+        for (const outfit of newOutfits) {
+            await saveOutfitHistory(outfit);
+        }
+        return newOutfits;
     } catch (e) {
         console.error("Failed to parse JSON for more outfits:", jsonText);
         throw new Error("The AI returned an invalid response. Please try again.");

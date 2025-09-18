@@ -9,8 +9,8 @@ import MyStylesPage from './pages/MyStylesPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
 import { Header } from './components/Header';
-import { FeedbackButton } from './components/FeedbackButton';
 import { FeedbackModal } from './components/FeedbackModal';
+import { FloatingActionMenu } from './components/FloatingActionMenu';
 
 const AppContent: React.FC = () => {
     const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -25,7 +25,6 @@ const AppContent: React.FC = () => {
     const [isFeedbackModalOpen, setFeedbackModalOpen] = useState(false);
     const location = useLocation();
     const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
-
 
     const toggleTheme = () => {
         const newTheme = theme === 'light' ? 'dark' : 'light';
@@ -54,12 +53,11 @@ const AppContent: React.FC = () => {
                     <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
                 </Routes>
             </main>
-            {!isAuthPage && <FeedbackButton onClick={() => setFeedbackModalOpen(true)} />}
+            {!isAuthPage && <FloatingActionMenu onFeedbackClick={() => setFeedbackModalOpen(true)} />}
             <FeedbackModal isOpen={isFeedbackModalOpen} onClose={() => setFeedbackModalOpen(false)} />
         </div>
     );
 }
-
 
 function App() {
   return (
